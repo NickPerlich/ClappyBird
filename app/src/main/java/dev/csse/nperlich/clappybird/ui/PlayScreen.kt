@@ -71,16 +71,6 @@ fun PlayScreen(
                 .height(400.dp)
                 .background(Color.Green)
         )
-
-        // Die - button on bottom right
-        Button(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            onClick = onDieClick,
-        ) {
-            Text("Die")
-        }
     }
 }
 
