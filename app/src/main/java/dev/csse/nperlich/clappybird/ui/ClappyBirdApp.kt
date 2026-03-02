@@ -2,6 +2,9 @@ package dev.csse.nperlich.clappybird.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.currentComposer
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +23,8 @@ object Routes {
 @Composable
 fun ClappyBirdApp() {
     val navController = rememberNavController()
+    val viewModel: GameViewModel = viewModel()
+    val highScore by viewModel.highScore.collectAsState()
 
     NavHost(
         navController = navController,
@@ -27,16 +32,18 @@ fun ClappyBirdApp() {
     ) {
         composable(Routes.START) {
             StartScreen(
-                onPlayClick = {
+                onPlayClick = { username ->
+                    viewModel.setUsername(username)
+                    viewModel.resetGame()
                     navController.navigate(Routes.GAME)
                 },
+                highScore = highScore,
                 modifier = Modifier.fillMaxSize()
             )
         }
 
         composable(Routes.GAME) {
-            val viewModel: GameViewModel = viewModel()
-
+            // set the game over callback
             viewModel.onGameOver = {
                 navController.navigate(Routes.DEATH )
             }
@@ -46,8 +53,11 @@ fun ClappyBirdApp() {
                 viewModel = viewModel
             )
         }
+
         composable(Routes.DEATH) {
             DeathScreen(
+                currentScore = viewModel.currentScore,
+                highScore = highScore,
                 modifier = Modifier.fillMaxSize(),
                 onRestartClick = {
                     navController.navigate(Routes.START) {

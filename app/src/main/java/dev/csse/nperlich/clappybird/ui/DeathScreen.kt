@@ -12,9 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.csse.nperlich.clappybird.data.HighScore
 
 @Composable
 fun DeathScreen(
+    currentScore: Int = 0,
+    highScore: HighScore? = null,
     modifier: Modifier = Modifier,
     onRestartClick: () -> Unit = {},
 ) {
@@ -30,6 +33,18 @@ fun DeathScreen(
                 text = "GAME OVER",
                 fontSize = 32.sp
             )
+
+            Text(
+                text = "Your Score: $currentScore",
+                fontSize = 24.sp
+            )
+
+            highScore?.let {
+                Text(
+                    text = "High Score: ${it.score} by ${it.username}",
+                    fontSize = 20.sp
+                )
+            }
 
             Button(onClick = onRestartClick) {
                 Text("RESTART")

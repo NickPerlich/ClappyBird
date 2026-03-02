@@ -16,12 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.csse.nperlich.clappybird.data.HighScore
 
 @Preview(showBackground = true)
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
-    onPlayClick: () -> Unit = {},
+    onPlayClick: (String) -> Unit = {},
+    highScore: HighScore? = null
 ) {
     var username by rememberSaveable { mutableStateOf("") }
 
@@ -40,7 +42,7 @@ fun StartScreen(
                 singleLine = true
             )
 
-            Button(onClick = onPlayClick) {
+            Button(onClick = { onPlayClick(username) }) {
                 Text("PLAY")
             }
         }
