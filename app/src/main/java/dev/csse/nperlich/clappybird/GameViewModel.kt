@@ -14,6 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +24,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     // high score flow
     val highScore: StateFlow<HighScore?> = MutableStateFlow(null)
 
+    // top 10 scores flow
+    val topTenScores: StateFlow<List<HighScore>> = MutableStateFlow(emptyList())
+
     private var gameLoopJob: Job? = null // track the game loop
 
     init {
@@ -30,6 +34,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             highScoreDao.getHighScore().collect { score ->
                 (highScore as MutableStateFlow).value = score
+            }
+        }
+
+        viewModelScope.launch {
+            highScoreDao.getTop10Scores().collect() { scores ->
+                (topTenScores as MutableStateFlow).value = scores
             }
         }
     }
@@ -170,19 +180,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             isGameOver = true
             gameLoopJob?.cancel() // stop the game loop
 
-            // check and save high score
+            // save score to leaderboard
             viewModelScope.launch {
-                val currentHighScore = highScore.value
-                if (currentHighScore == null || currentScore > currentHighScore.score) {
-                    // new high score
-                    highScoreDao.updateHighScore(
-                        HighScore(
-                            id = 1,
-                            score = currentScore,
-                            username = currentUsername
-                        )
+                highScoreDao.insertScore(
+                    HighScore(
+                        score = currentScore,
+                        username = currentUsername
                     )
-                }
+                )
+                // Clean up - keep only top 10
+                highScoreDao.deleteOldScores()
             }
 
             onGameOver?.invoke() // trigger navigation to death screen

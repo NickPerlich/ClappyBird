@@ -5,7 +5,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "high_scores")
 data class HighScore(
-    @PrimaryKey val id: Int = 1,  // Always ID 1 since only one high score is stored
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val score: Int,
-    val username: String
+    val username: String,
+    val timestamp: Long = System.currentTimeMillis()
 )

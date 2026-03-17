@@ -55,15 +55,17 @@ fun ClappyBirdApp() {
         }
 
         composable(Routes.DEATH) {
+            val topScores by viewModel.topTenScores.collectAsState()
+
             DeathScreen(
                 currentScore = viewModel.currentScore,
-                highScore = highScore,
-                modifier = Modifier.fillMaxSize(),
+                topScores = topScores,
                 onRestartClick = {
                     navController.navigate(Routes.START) {
                         popUpTo(Routes.START) { inclusive = true }
                     }
                 },
+                modifier = Modifier.fillMaxSize()
             )
         }
     }

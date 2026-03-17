@@ -42,7 +42,10 @@ fun StartScreen(
                 singleLine = true
             )
 
-            Button(onClick = { onPlayClick(username) }) {
+            Button(
+                onClick = { onPlayClick(username) },
+                enabled = username.isNotBlank()
+            ) {
                 Text("PLAY")
             }
         }
