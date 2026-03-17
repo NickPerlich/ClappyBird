@@ -14,8 +14,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.csse.nperlich.clappybird.GameViewModel
+import dev.csse.nperlich.clappybird.SoundDetector
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Preview(
@@ -36,21 +42,35 @@ fun PlayScreen(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel = viewModel()
 ) {
-    // start game loop
-    LaunchedEffect(Unit) {
-        viewModel.startGameLoop()
+    var permissionGranted by remember { mutableStateOf(false) }
+
+    // Request permission when screen appears
+    if (!permissionGranted) {
+        RequestAudioPermission(
+            onPermissionGranted = { permissionGranted = true }
+        )
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                viewModel.flap()
+    // Start game loop and sound detection when permission granted
+    DisposableEffect(permissionGranted) {
+        if (permissionGranted) {
+            viewModel.startGameLoop()
+
+            val soundDetector = SoundDetector(
+                onClapDetected = { viewModel.flap() }
+            )
+            soundDetector.startListening()
+
+            // Cleanup when leaving screen
+            onDispose {
+                soundDetector.stopListening()
             }
-    ) {
+        } else {
+            onDispose { }
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
         // Bird - yellow circle
         Box(
             modifier = Modifier
@@ -80,6 +100,27 @@ fun PlayScreen(
                 .background(Color.Green)
         )
 
+        // Pipe 2 - top rectangle
+        Box(
+            modifier = Modifier
+                .offset(x = viewModel.pipe2X.dp, y = 0.dp)
+                .width(80.dp)
+                .height(viewModel.gap2Y.dp)
+                .background(Color.Green)
+        )
+
+        // Pipe 2 - bottom rectangle
+        Box(
+            modifier = Modifier
+                .offset(
+                    x = viewModel.pipe2X.dp,
+                    y = (viewModel.gap2Y + viewModel.gapSize).dp
+                )
+                .width(80.dp)
+                .height(400.dp)
+                .background(Color.Green)
+        )
+
         // current score
         Text(
             text = "Score: ${viewModel.currentScore}",
@@ -90,7 +131,8 @@ fun PlayScreen(
         )
 
         // high score
-        viewModel.highScore.value?.let { highScore ->
+        val highScore by viewModel.highScore.collectAsState()
+        highScore?.let { highScore ->
             Text(
                 text = "High: ${highScore.score} by ${highScore.username}",
                 fontSize = 16.sp,
@@ -99,6 +141,15 @@ fun PlayScreen(
                     .padding(16.dp)
             )
         }
+
+        // Instruction text - ADD THIS
+        Text(
+            text = "CLAP TO FLAP!",
+            fontSize = 16.sp,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(32.dp)
+        )
     }
 }
 

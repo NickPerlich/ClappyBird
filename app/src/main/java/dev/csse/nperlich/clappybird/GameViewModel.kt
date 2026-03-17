@@ -40,14 +40,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     var birdVelocity by mutableFloatStateOf(0f)
 
     // pipe state
-    var pipeX by mutableFloatStateOf(800f)
+    var pipeX by mutableFloatStateOf(500f)
 
     var gapY by mutableFloatStateOf(300f)
+
+    var pipe2X by mutableFloatStateOf(800f)
+
+    var gap2Y by mutableFloatStateOf(300f)
 
     val gapSize = 250f
 
     // game state
     var isGameOver by mutableStateOf(false)
+
+    var hasGameStarted by mutableStateOf(false)
 
     var currentScore by mutableStateOf(0)
 
@@ -71,7 +77,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val screenBottom = 800f
 
     // track if we have scored this pipe yet
-    private var hasScored = false
+    private var hasScored1 = false
+    private var hasScored2 = false
 
     // set username for this game session
     fun setUsername(username: String) {
@@ -88,30 +95,48 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 delay(16) // ~60 FPS (16ms per frame)
 
-                // apply gravity to bird velocity
-                birdVelocity += gravity
+                if (!isGameOver && hasGameStarted) {
+                    // apply gravity to bird velocity
+                    birdVelocity += gravity
 
-                // update bird position based on velocity
-                birdY += birdVelocity
+                    // update bird position based on velocity
+                    birdY += birdVelocity
 
-                // move pipe left
-                pipeX -= 5f
+                    // move pipes left
+                    pipeX -= 5f
+                    pipe2X -= 5f
 
-                // check if bird passed the pipe
-                if (!hasScored && birdX > pipeX + pipeWidth) {
-                    currentScore++
-                    hasScored = true
+                    // check if bird passed the first pipe
+                    if (!hasScored1 && birdX > pipeX + pipeWidth) {
+                        currentScore++
+                        hasScored1 = true
+                    }
+
+                    // check if bird passed second pipe
+                    if (!hasScored2 && birdX > pipe2X + pipeWidth) {
+                        currentScore++
+                        hasScored2 = true  // reset for next cycle
+                    }
+
+                    val pipeSpacing = 400f
+
+                    // reset pipe 1 when it goes off screen
+                    if (pipeX < -100f) {
+                        pipeX = pipe2X + pipeSpacing  // Spawn relative to pipe 2
+                        gapY = (200..500).random().toFloat()
+                        hasScored1 = false
+                    }
+
+                    // reset pipe 2 when it goes off screen
+                    if (pipe2X < -100f) {
+                        pipe2X = pipeX + pipeSpacing  // Spawn relative to pipe 1
+                        gap2Y = (200..500).random().toFloat()
+                        hasScored2 = false
+                    }
+
+                    // check for collisions
+                    checkCollisions()
                 }
-
-                // reset pipe when it goes off screen
-                if (pipeX < -100f) {
-                    pipeX = 800f
-                    gapY = (200..500).random().toFloat()  // Random gap position
-                    hasScored = false // reset scoring for new pipe
-                }
-
-                // check for collisions
-                checkCollisions()
             }
         }
     }
@@ -124,9 +149,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // check if bird hit a pipe
+        // check if bird hit first pipe
         if (birdX + birdSize > pipeX && birdX < pipeX + pipeWidth) {
             if (birdY < gapY || birdY + birdSize > gapY + gapSize) {
+                die()
+            }
+        }
+
+        // check if bird hit second pipe
+        if (birdX + birdSize > pipe2X && birdX < pipe2X + pipeWidth) {
+            if (birdY < gap2Y || birdY + birdSize > gap2Y + gapSize) {
                 die()
             }
         }
@@ -160,6 +192,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     // User action - flap
     fun flap() {
         if (!isGameOver) {
+            if (!hasGameStarted) {
+                hasGameStarted = true // first clap starts game
+            }
             birdVelocity = flapStrength  // set upward velocity
         }
     }
@@ -169,10 +204,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         gameLoopJob?.cancel()
         birdY = 400f
         birdVelocity = 0f
-        pipeX = 800f
+        pipeX = 500f
         gapY = 300f
+        pipe2X = 800f
+        gap2Y = 300f
         isGameOver = false
+        hasGameStarted = false
         currentScore = 0
-        hasScored = false
+        hasScored1 = false
+        hasScored2 = false
     }
 }
