@@ -77,10 +77,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     // bird constants
     private val birdX = 100f
-    private val birdSize = 40f
+    private val birdSize = 50f
 
     // pipe constants
-    private val pipeWidth = 60f
+    private val pipeWidth = 80f
 
     // screen bounds
     private val screenTop = 0f
@@ -128,7 +128,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         hasScored2 = true  // reset for next cycle
                     }
 
-                    val pipeSpacing = 400f
+                    val pipeSpacing = 300f
 
                     // reset pipe 1 when it goes off screen
                     if (pipeX < -100f) {
@@ -155,20 +155,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun checkCollisions() {
         // check if bird hit top or bottom of screen
         if (birdY <= screenTop || birdY + birdSize >= screenBottom) {
+            println("COLLISION: Screen edge - birdY: $birdY, screenTop: $screenTop, screenBottom: $screenBottom")
             die()
             return
         }
 
         // check if bird hit first pipe
         if (birdX + birdSize > pipeX && birdX < pipeX + pipeWidth) {
+            println("HORIZONTAL CHECK PIPE 1 PASSED - birdX: $birdX, pipeX: $pipeX")
             if (birdY < gapY || birdY + birdSize > gapY + gapSize) {
+                println("COLLISION: Pipe 1 - birdY: $birdY, gapY: $gapY, gap end: ${gapY + gapSize}")
                 die()
+                return
             }
         }
 
         // check if bird hit second pipe
         if (birdX + birdSize > pipe2X && birdX < pipe2X + pipeWidth) {
+            println("HORIZONTAL CHECK PIPE 2 PASSED - birdX: $birdX, pipe2X: $pipe2X")
             if (birdY < gap2Y || birdY + birdSize > gap2Y + gapSize) {
+                println("COLLISION: Pipe 2 - birdY: $birdY, gap2Y: $gap2Y, gap end: ${gap2Y + gapSize}")
                 die()
             }
         }

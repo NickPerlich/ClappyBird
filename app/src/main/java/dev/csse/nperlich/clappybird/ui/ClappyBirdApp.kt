@@ -60,7 +60,13 @@ fun ClappyBirdApp() {
             DeathScreen(
                 currentScore = viewModel.currentScore,
                 topScores = topScores,
-                onRestartClick = {
+                onPlayAgainClick = {
+                    viewModel.resetGame()
+                    navController.navigate(Routes.GAME) {
+                        popUpTo(Routes.GAME) { inclusive = true }
+                    }
+                },
+                onExitClick = {
                     navController.navigate(Routes.START) {
                         popUpTo(Routes.START) { inclusive = true }
                     }

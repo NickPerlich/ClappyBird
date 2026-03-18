@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,12 +21,15 @@ fun DeathScreen(
     modifier: Modifier = Modifier,
     currentScore: Int = 0,
     topScores: List<HighScore> = emptyList(),  // CHANGE: from single highScore to list
-    onRestartClick: () -> Unit = {}
+    onPlayAgainClick: () -> Unit = {},
+    onExitClick: () -> Unit = {}
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        Background()
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -34,12 +38,14 @@ fun DeathScreen(
             Text(
                 text = "GAME OVER",
                 fontSize = 32.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Text(
                 text = "Your Score: $currentScore",
-                fontSize = 24.sp
+                fontSize = 24.sp,
+                color = Color.White
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -47,7 +53,8 @@ fun DeathScreen(
             Text(
                 text = "TOP 10 LEADERBOARD",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             // Leaderboard
@@ -66,12 +73,14 @@ fun DeathScreen(
                     ) {
                         Text(
                             text = "${index + 1}. ${score.username}",
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            color = Color.White
                         )
                         Text(
                             text = "${score.score}",
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -82,14 +91,25 @@ fun DeathScreen(
                         Text(
                             text = "No scores yet!",
                             fontSize = 16.sp,
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(16.dp),
+                            color = Color.White
                         )
                     }
                 }
             }
 
-            Button(onClick = onRestartClick) {
-                Text("RESTART")
+            Button(onClick = onPlayAgainClick) {
+                Text(
+                    text = "Play Again",
+                    color = Color.White
+                )
+            }
+
+            Button(onClick = onExitClick) {
+                Text(
+                    text = "Exit",
+                    color = Color.White
+                )
             }
         }
     }
